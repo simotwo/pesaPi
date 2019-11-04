@@ -1,5 +1,5 @@
 <?php
-/*	Copyright (c) 2011, PLUSPEOPLE Kenya Limited. 
+/*	Copyright (c) 2015, PLUSPEOPLE Kenya Limited. 
 		All rights reserved.
 
 		Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,21 @@
 
 		File originally by Michael Pedersen <kaal@pluspeople.dk>
  */
-namespace PLUSPEOPLE\PesaPi\MpesaPaybill;
+namespace PLUSPEOPLE\PesaPi\CongoMpesaPrivate;
 
-class Scrubber {
-	const VERSION = "1.0";
-
-	public static function numberInput($input) {
-		$input = trim($input);
-		$amount = 0;
-
-		if (preg_match("/^[0-9,]+$/", $input)) {
-			$amount = 100 * (int)str_replace(',', '', $input);
-		} elseif (preg_match("/^[0-9,]+\.[0-9]$/", $input)) {
-			$amount = 10 * (int)str_replace(array('.', ','), '', $input);
-		} elseif (preg_match("/^[0-9,]*\.[0-9][0-9]$/", $input)) {
-			$amount = (int)str_replace(array('.', ','), '', $input);
-		} else {
-			$amount = (int)$input;
-		}
-		return $amount;
+class Account extends \PLUSPEOPLE\PesaPi\Base\PrivateAccount { 
+	public function getFormatedType() {
+		return "Congo - Vodaphone MPESA Private";
 	}
 
-	public static function dateInput($input) {
-		$timeStamp = strtotime($input);
-		if ($timeStamp != FALSE) {
-			return $timeStamp;
-		}
-		return 0;
+	public function getSender() {
+		return ""; // unknown at this point - security risk
 	}
 
-	public static function ScrubRows(&$data) {
-		$result = array();
-		$rows = HTMLPaymentScrubber1::scrubPaymentRows($data);
-
-		foreach($rows AS $row) {
-			$transaction = HTMLPaymentScrubber1::scrubPayment($row);
-			if ($transaction != null) {
-				$result[] = $transaction;
-			}
-		}
-
-		// return the reverse array - we want the oldest first
-		return $result;
+	// Namespace mismatch workaround
+	public function parserFactory() {
+		return new Parser();
 	}
-
 }
-
-
 
 ?>

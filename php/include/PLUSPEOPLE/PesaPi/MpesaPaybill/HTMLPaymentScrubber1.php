@@ -1,5 +1,5 @@
 <?php
-/*	Copyright (c) 2011-2014, PLUSPEOPLE Kenya Limited. 
+/*	Copyright (c) 2011-2015, PLUSPEOPLE Kenya Limited. 
 		All rights reserved.
 
 		Redistribution and use in source and binary forms, with or without
@@ -31,7 +31,6 @@
 namespace PLUSPEOPLE\PesaPi\MpesaPaybill;
 
 class HTMLPaymentScrubber1 {
-	const VERSION = "1.0";
 
 	static public function scrubUrls(&$rawtext) {
 		$temp = array();
@@ -61,12 +60,18 @@ class HTMLPaymentScrubber1 {
 										"NOTE" => "",
 										"COST" => 0);
 
+		///////////////////////
+		// DETECT if it is a Null result row
+		if (strpos ($rawtext, '<span>No records to display.</span>') !== FALSE) {
+			return null;
+		}
+
 		/////////////////////////
 		// First identify those properties that are the same for all types
 		// Reciept
 		$matches = array();
 		if (preg_match('/<td\s*>\s*<a\s.+>(.+)<\/a\s*>\s*<\/td\s*>/iU', $rawtext, $matches) > 0) {
-			$result['RECIEPT'] = trim($matches[1]);
+			$result['RECEIPT'] = trim($matches[1]);
 		}
 		
 		// Time

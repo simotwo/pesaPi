@@ -1,5 +1,5 @@
 <?php
-/*	Copyright (c) 2011, PLUSPEOPLE Kenya Limited. 
+/*	Copyright (c) 2014, PLUSPEOPLE Kenya Limited. 
 		All rights reserved.
 
 		Redistribution and use in source and binary forms, with or without
@@ -28,52 +28,59 @@
 
 		File originally by Michael Pedersen <kaal@pluspeople.dk>
  */
-namespace PLUSPEOPLE\PesaPi\MpesaPaybill;
+namespace PLUSPEOPLE\PesaPi\Base;
+use PLUSPEOPLE\PesaPi\Base\TransactionFactory;
 
-class Scrubber {
-	const VERSION = "1.0";
+class PrivateAccount extends Account { 
 
-	public static function numberInput($input) {
-		$input = trim($input);
-		$amount = 0;
+	public function availableBalance($time = null) {
+		$time = (int)$time;
+		if (0 == $time) {
+			$time = time();
+		}
 
-		if (preg_match("/^[0-9,]+$/", $input)) {
-			$amount = 100 * (int)str_replace(',', '', $input);
-		} elseif (preg_match("/^[0-9,]+\.[0-9]$/", $input)) {
-			$amount = 10 * (int)str_replace(array('.', ','), '', $input);
-		} elseif (preg_match("/^[0-9,]*\.[0-9][0-9]$/", $input)) {
-			$amount = (int)str_replace(array('.', ','), '', $input);
-		} else {
-			$amount = (int)$input;
+		$balance = TransactionFactory::factoryOneByTime($this, $time);
+		if (is_object($balance)) {
+			return $balance->getPostBalance();
 		}
 		return $amount;
 	}
 
-	public static function dateInput($input) {
-		$timeStamp = strtotime($input);
-		if ($timeStamp != FALSE) {
-			return $timeStamp;
-		}
-		return 0;
+	public function locateByReceipt($receipt) {
+		return TransactionFactory::factoryByReceipt($this, $receipt);
 	}
 
-	public static function ScrubRows(&$data) {
-		$result = array();
-		$rows = HTMLPaymentScrubber1::scrubPaymentRows($data);
-
-		foreach($rows AS $row) {
-			$transaction = HTMLPaymentScrubber1::scrubPayment($row);
-			if ($transaction != null) {
-				$result[] = $transaction;
-			}
-		}
-
-		// return the reverse array - we want the oldest first
-		return $result;
+	public function initTransaction($id, $initValues = null) {
+		return new Transaction($id, $initValues);
 	}
+
+	public function importTransaction($message) {
+		if ($message != "") {
+			$parser = $this->parserFactory();
+			$temp = $parser->parse($message);
+
+			$transaction = Transaction::createNew($this->getId(), $temp['SUPER_TYPE'], $temp['TYPE']);
+			$transaction->setReceipt($temp['RECEIPT']);
+			$transaction->setTime($temp["TIME"]);
+			$transaction->setPhonenumber($temp['PHONE']);
+			$transaction->setName($temp['NAME']);
+			$transaction->setAccount($temp['ACCOUNT']);
+			$transaction->setStatus($temp['STATUS']);
+			$transaction->setAmount($temp['AMOUNT']);
+			$transaction->setPostBalance($temp['BALANCE']);
+			$transaction->setNote($temp['NOTE']);
+ 			$transaction->setTransactionCost($temp['COST']);
+			
+			$transaction->update();
+
+			// Callback if needed
+			$this->handleCallback($transaction);
+
+			return $transaction;
+		}
+		return null;
+	}
+
 
 }
-
-
-
 ?>

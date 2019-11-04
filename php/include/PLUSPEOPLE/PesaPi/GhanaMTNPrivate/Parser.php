@@ -1,5 +1,5 @@
 <?php
-/*	Copyright (c) 2011, PLUSPEOPLE Kenya Limited. 
+/*	Copyright (c) 2014, PLUSPEOPLE Kenya Limited. 
 		All rights reserved.
 
 		Redistribution and use in source and binary forms, with or without
@@ -27,53 +27,38 @@
 		SUCH DAMAGE.
 
 		File originally by Michael Pedersen <kaal@pluspeople.dk>
+		Based on examples provided by Baba Musah
  */
-namespace PLUSPEOPLE\PesaPi\MpesaPaybill;
+namespace PLUSPEOPLE\PesaPi\GhanaMTNPrivate;
 
-class Scrubber {
-	const VERSION = "1.0";
+class Parser extends \PLUSPEOPLE\PesaPi\Base\Parser {
+	public function parse($input) {
+		$result = $this->getBlankStructure();
 
-	public static function numberInput($input) {
-		$input = trim($input);
-		$amount = 0;
+		// REFACTOR: should be split into subclasses
+		if (strpos($input, "Payment received for GHC") !== FALSE) {
+			$result["SUPER_TYPE"] = Transaction::MONEY_IN;
+			$result["TYPE"] = Transaction::GH_MTN_PRIVATE_PAYMENT_RECEIVED;
 
-		if (preg_match("/^[0-9,]+$/", $input)) {
-			$amount = 100 * (int)str_replace(',', '', $input);
-		} elseif (preg_match("/^[0-9,]+\.[0-9]$/", $input)) {
-			$amount = 10 * (int)str_replace(array('.', ','), '', $input);
-		} elseif (preg_match("/^[0-9,]*\.[0-9][0-9]$/", $input)) {
-			$amount = (int)str_replace(array('.', ','), '', $input);
-		} else {
-			$amount = (int)$input;
-		}
-		return $amount;
-	}
-
-	public static function dateInput($input) {
-		$timeStamp = strtotime($input);
-		if ($timeStamp != FALSE) {
-			return $timeStamp;
-		}
-		return 0;
-	}
-
-	public static function ScrubRows(&$data) {
-		$result = array();
-		$rows = HTMLPaymentScrubber1::scrubPaymentRows($data);
-
-		foreach($rows AS $row) {
-			$transaction = HTMLPaymentScrubber1::scrubPayment($row);
-			if ($transaction != null) {
-				$result[] = $transaction;
+			$temp = array();
+			preg_match_all("/MobileMoney Advice[\s\n\r]+Payment received for GHC([0-9\.\,]+) from ([0-9A-Za-z '\.]+)[\s\n\r]+Current Balance: GHC([0-9\.\,]+)[\s\n\r]+Available Balance: GHC([0-9\.\,]+)[\s\n\r]+Reference: (.*)[\s\n\r]+QJV/mi", $input, $temp);
+			if (isset($temp[1][0])) {
+				$result["RECEIPT"] = time(); // MTN does not publish reference numbers - stupid.
+				$result["AMOUNT"] = $this->numberInput($temp[1][0]);
+				$result["NAME"] = $temp[2][0];
+				$result["TIME"] = time();
+				$result["BALANCE"] = $this->numberInput($temp[3][0]);
+				$result["ACCOUNT"] = trim($temp[5][0]);
 			}
+
+		} else {
+			$result["SUPER_TYPE"] = Transaction::MONEY_NEUTRAL;
+			$result["TYPE"] = Transaction::GH_MTN_PRIVATE_UNKOWN;
 		}
 
-		// return the reverse array - we want the oldest first
 		return $result;
 	}
 
 }
-
-
 
 ?>

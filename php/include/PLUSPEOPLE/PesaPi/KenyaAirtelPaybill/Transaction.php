@@ -1,5 +1,5 @@
 <?php
-/*	Copyright (c) 2011, PLUSPEOPLE Kenya Limited. 
+/*	Copyright (c) 2014, PLUSPEOPLE Kenya Limited. 
 		All rights reserved.
 
 		Redistribution and use in source and binary forms, with or without
@@ -28,19 +28,14 @@
 
 		File originally by Michael Pedersen <kaal@pluspeople.dk>
  */
-namespace PLUSPEOPLE\PesaPi\MpesaPaybill;
+namespace PLUSPEOPLE\PesaPi\KenyaAirtelPaybill;
 
 class Transaction extends \PLUSPEOPLE\PesaPi\Base\Transaction {
 	// Extended attributes
-	const MPESA_PAYBILL_PAYMENT_RECIEVED = 1;
-	const MPESA_PAYBILL_PAYMENT_CANCELLATION = 2;
-	const MPESA_PAYBILL_PAYMENT_REFUND = 7;
-	const MPESA_PAYBILL_FUNDS_TRANSFER = 3;
-	const MPESA_PAYBILL_FUNDS_CANCELLATION = 4;
-	const MPESA_PAYBILL_BUSINESS_CHARGES = 5;
-	const MPESA_PAYBILL_BUSINESS_CHARGES_CANCELLATION = 6;
-	const MPESA_PAYBILL_TRANSFER_FROM_UTILITY = 107;
-	const MPESA_PAYBILL_UNKOWN = 199;
+	const KE_AIRTEL_PAYBILL_PAYMENT_RECEIVED = 901;
+
+	const KE_AIRTEL_PAYBILL_UNKOWN = 999;
+
 
 	public static function updateData($row, $account) {
 		$existing = $account->locateByReceipt($row['RECEIPT'], false);
@@ -105,6 +100,7 @@ class Transaction extends \PLUSPEOPLE\PesaPi\Base\Transaction {
 		}
 		return null;
 	}
+
 }
 
 ?>

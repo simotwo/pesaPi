@@ -1,5 +1,5 @@
 <?php
-/*	Copyright (c) 2011-2014, PLUSPEOPLE Kenya Limited. 
+/*	Copyright (c) 2011-2015, PLUSPEOPLE Kenya Limited. 
 		All rights reserved.
 
 		Redistribution and use in source and binary forms, with or without
@@ -34,13 +34,20 @@ class Account {
   //############### Properties ####################
 	const MPESA_PAYBILL = 1;
 	const MPESA_PRIVATE = 2;
-	const KENYA_YU_PRIVATE = 3;
+	const KENYA_YU_PRIVATE = 3; // Yu have folded - this will be removed.
 	const GHANA_AIRTEL_PRIVATE = 4;
 	const RWANDA_MTN_PRIVATE = 5;
 	const TANZANIA_MPESA_PRIVATE = 6;
 	const TANZANIA_TIGO_PRIVATE = 7;
 	const KENYA_AIRTEL_PRIVATE = 8;
-
+	const KENYA_AIRTEL_PAYBILL = 9;
+	const SOMALIA_GOLIS_PRIVATE = 10;
+	const SOMALIA_TELESOME_PRIVATE = 11;
+	const SOMALIA_HORMUUD_PRIVATE = 12;
+	const GHANA_MTN_PRIVATE = 13;
+	const DR_CONGO_MPESA_PRIVATE = 14;
+	const UGANDA_MTN_PRIVATE = 15;
+	
   protected $id = 0;
   protected $type = 0;
   protected $name = "";
